@@ -19,12 +19,11 @@ const thoughtSchema = new Schema(
          type: String,
          required: true,
       },
-      reactions: [{
+      reactions: [
          //These are like replies
          // Array of nested documents created with the reactionSchema
-         type: Schema.Types.ObjectId,
-         ref: 'Reaction'
-      }]
+         Reaction
+      ]
    },
    {
       toJSON: {

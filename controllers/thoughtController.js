@@ -1,5 +1,5 @@
 const { ObjectId } = require('mongoose').Types;
-const { User, Thought } = require('../models');
+const { User, Thought, Reaction } = require('../models');
 
 async function getAllThought() {
    try {
@@ -51,22 +51,20 @@ async function deleteThoughtById (id) {
 // Create a reaction stored in a single thought's reactions array field
 async function addNewReaction (id, data) {
    try {
-      const reactionResult = await Thought.reaction.create(data);
-      const thoughtResult = await Thought.findByIdAndUpdate(id, {$push: {reactions: reactionResult._id }}, {new: true})
-      return reactionResult
+      const thoughtResult = await Thought.findOneAndUpdate(id)
+      thoughtResult.reactions.push(data)
+      return thoughtResult
    } 
    catch (err) {
       throw new Error (err.message)
    }
 }
 
-// Remove a reaction
+// Remove a reaction  THIS NEED WORK
 async function removeReaction (id, reactionId) {
    try {
-      return await User.findOneAndDelete(
-         { _id: id },
-         { $pull: {friends: reactionId } }
-      )
+      const thoughtResult = await Thought.findOneAndDelete(id)
+      thoughtResult.reactions.pull(reactionId)
    } 
    catch (err) {
       throw new Error (err.message)
