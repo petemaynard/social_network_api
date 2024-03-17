@@ -1,19 +1,19 @@
-const { ObjectId } = require('mongoose').Types;
-const { User, Thought } = require('../models');
+// const { ObjectId } = require('mongoose').Types;
+const User = require('../models/User');
 
-async function getAllUsers(req, res) {
+async function getAllUsers() {
    try {
-      const users = await User.find();
-      return res.json(users)
+      return await User.find();
    } catch (err) {
       console.log(err);
-      return res.status(500),json(err)
+      return res.status(500).json(err)
    }
 }
 
 async function getSingleUser (id) {
    try {
-       return await User.findById(id);
+       return await User.findById(id)
+       .populate('thoughts');
    }
    catch (err) {
        throw new Error (err.message);
@@ -29,7 +29,7 @@ async function createUser (data) {
    }
 }
 
-async function updateUser (id, data) {
+async function updateUserById (id, data) {
    try {
        return  await User.findByIdAndUpdate(id, data, {new:true})      
    } catch (err) {
@@ -37,9 +37,11 @@ async function updateUser (id, data) {
    }
 }
 
-async function deleteUser (id) {
+async function deleteUserById (id) {
    try {
-       return await User.findByIdAndDelete(id);
+       await User.findByIdAndDelete(id);
+       await Thought.deleteMany({ username: resourceLimits.username })
+       return
    }
    catch (er) {
        throw new Error (er.message);
@@ -47,11 +49,11 @@ async function deleteUser (id) {
 }
 
 // Add a new friend (an existing user) to the user's friend list
-async function addNewFriend () {
+async function addNewFriend (id, friendId) {
    try {
       return await User.findOneAndUpdate(
-         { _id: req.params.userId },
-         { $addToSet: {user: req.params.friendID } }
+         { _id: id },
+         { $addToSet: {friends: friendId } }
       )
    } 
    catch (err) {
@@ -60,11 +62,11 @@ async function addNewFriend () {
 }
 
 // Remove a friend (an existing user) from a user's friend list.
-async function removeNewFriend () {
+async function removeNewFriend (id, friendId) {
    try {
       return await User.findOneAndDelete(
-         { _id: req.params.userId },
-         { $pull: {friends: req.params.friendID } }
+         { _id: id },
+         { $pull: {friends: friendId } }
       )
    } 
    catch (err) {
@@ -74,4 +76,4 @@ async function removeNewFriend () {
 
 
 
-module.exports = { getAllUsers, getSingleUser, createUser, updateUser, deleteUser, addNewFriend, removeNewFriend}
+module.exports = { getAllUsers, getSingleUser, createUser, updateUserById, deleteUserById, addNewFriend, removeNewFriend}
